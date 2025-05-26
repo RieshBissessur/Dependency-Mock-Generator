@@ -1,0 +1,1 @@
+{"mappings":[{"id":"5843f7ae-3587-42d1-ba9c-a0dcd90098b9","request":{"urlPattern":"basic","method":"GET"},"response":{"status":400,"jsonBody":{"message":"This is a basic GET response"}},"uuid":"5843f7ae-3587-42d1-ba9c-a0dcd90098b9"}],"meta":{"total":1},"name":"Mock"}

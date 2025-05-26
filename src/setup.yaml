@@ -1,0 +1,10 @@
+Containers:
+  #- Name: redis
+  #  Image: redis
+  #  Tag: latest
+  #  Port: 6379
+
+Mocks:
+  - Name: Mock 
+    Type: 0
+    File: ""
