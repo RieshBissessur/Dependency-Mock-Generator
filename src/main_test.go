@@ -2,8 +2,10 @@ package main
 
 import (
 	"context"
+	"mock-generator/managers"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/wait"
@@ -41,4 +43,26 @@ func TestWithRedis(t *testing.T) {
 	// Print connection details for verification
 	t.Logf("Redis is available on %s:%s", host, mappedPort.Port())
 	t.Log("Test completed successfully")
+}
+
+func TestSetupMock(t *testing.T) {
+	// Act
+	managers.RunSetup("test-setup.yaml")
+
+	// Assert
+	value, contains := managers.ActiveMocks["TestMock"]
+
+	assert.Equal(t, contains, true)
+	assert.Contains(t, value, "http://localhost")
+}
+
+func TestImportMock(t *testing.T) {
+	// Act
+	managers.ImportMockStateFromFile("mappings/Mock-2025-05-26T15:50:31+02:00.json")
+
+	// Assert
+	value, contains := managers.ActiveMocks["Mock"]
+
+	assert.Equal(t, contains, true)
+	assert.Contains(t, value, "http://localhost")
 }

@@ -16,7 +16,7 @@ func main() {
 
 	//managers.ExportMockStates()
 
-	managers.ImportMockStateFromFile("/Users/rieshbissessur/Downloads/Git/Mock-Generator/src/mappings/Mock-2025-05-26T15:50:31+02:00.json")
+	managers.ImportMockStateFromFile("mappings/Mock-2025-05-26T15:50:31+02:00.json")
 
 	for true {
 	}

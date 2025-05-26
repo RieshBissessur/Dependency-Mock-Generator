@@ -5,8 +5,8 @@ import (
 	"mock-generator/services"
 )
 
-var activeContainers = make(map[string]string)
-var activeMocks = make(map[string]string)
+var ActiveContainers = make(map[string]string)
+var ActiveMocks = make(map[string]string)
 
 func RunSetup(setupPathFile string) error {
 
@@ -21,7 +21,7 @@ func RunSetup(setupPathFile string) error {
 			continue
 		}
 
-		activeContainers[container.Name] = containerUrl
+		ActiveContainers[container.Name] = containerUrl
 	}
 
 	for _, wireMock := range setup.Mocks {
@@ -30,14 +30,14 @@ func RunSetup(setupPathFile string) error {
 			continue
 		}
 
-		activeMocks[wireMock.Name] = mockUrl
+		ActiveMocks[wireMock.Name] = mockUrl
 	}
 
 	return nil
 }
 
 func ExportMockStates() error {
-	for name, wireMock := range activeMocks {
+	for name, wireMock := range ActiveMocks {
 		exportError := services.ExportMockState(name, wireMock)
 		if exportError != nil {
 			return exportError
@@ -53,6 +53,6 @@ func ImportMockStateFromFile(filePath string) error {
 		return importError
 	}
 
-	activeMocks[name] = mockUrl
+	ActiveMocks[name] = mockUrl
 	return nil
 }

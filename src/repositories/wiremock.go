@@ -89,7 +89,7 @@ func ImportMappingModels(url string, mapping models.Mapping) error {
 	}
 
 	defer response.Body.Close()
-	if response.StatusCode != http.StatusAccepted {
+	if response.StatusCode != http.StatusCreated {
 		return fmt.Errorf("Failed to get mappings with status code: %s", strconv.Itoa(response.StatusCode))
 	}
 
