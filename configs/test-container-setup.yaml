@@ -1,0 +1,9 @@
+Containers:
+  - Name: Redis
+    Image: redis
+    Tag: latest
+    Port: 6379
+
+Mocks:
+  #- Name: TestMock 
+  #  File: ""

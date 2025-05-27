@@ -18,6 +18,7 @@ var (
 	NewWiremockClient = func(url string) WiremockClient {
 		return wiremock.NewClient(url)
 	}
+
 	HttpClient HTTPClient = realHTTPClient{}
 )
 

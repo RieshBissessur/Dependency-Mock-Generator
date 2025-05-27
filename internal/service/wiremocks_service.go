@@ -9,12 +9,26 @@ import (
 	"github.com/rieshbissessur/dependency-mock-generator/internal/repository"
 )
 
-func SetupMock(wireMocks model.Mock) (string, error) {
-	url, err := repository.CreateWireMockContainer(wireMocks.Name)
+func SetupMock(mock model.Mock) (string, error) {
+	url, err := repository.CreateWireMockContainer(mock.Name)
 
 	if err != nil {
 		fmt.Println("Error creating WireMock test container:", err)
 		return "", err
+	}
+
+	if mock.File == nil || *mock.File == "" {
+		return url, nil
+	}
+
+	mappings, readError := ReadMapingModelFromFile(*mock.File)
+	if readError != nil {
+		return "", readError
+	}
+
+	importError := ImportMockState(url, mappings)
+	if importError != nil {
+		return "", importError
 	}
 
 	return url, nil
@@ -38,15 +52,10 @@ func ExportMockState(name string, url string) error {
 	return nil
 }
 
-func ImportMockState(pathToFile string) (string, string, error) {
-	content, readError := repository.ReadFileContentAsBytes(pathToFile)
+func CreateAndImportMockState(pathToFile string) (string, string, error) {
+	mappings, readError := ReadMapingModelFromFile(pathToFile)
 	if readError != nil {
 		return "", "", readError
-	}
-
-	var mappings model.Mappings
-	if err := json.Unmarshal(content, &mappings); err != nil {
-		return "", "", err
 	}
 
 	mock := model.Mock{Name: *mappings.Name}
@@ -55,10 +64,33 @@ func ImportMockState(pathToFile string) (string, string, error) {
 		return "", "", err
 	}
 
-	importError := repository.ImportMappingModels(mockUrl, mappings.Mappings[0])
+	importError := ImportMockState(mockUrl, mappings)
 	if importError != nil {
 		return "", "", importError
 	}
 
 	return mockUrl, *mappings.Name, nil
+}
+
+func ImportMockState(mockUrl string, mappings model.Mappings) error {
+	importError := repository.ImportMappingModels(mockUrl, mappings.Mappings[0])
+	if importError != nil {
+		return importError
+	}
+
+	return nil
+}
+
+func ReadMapingModelFromFile(pathToFile string) (model.Mappings, error) {
+	content, readError := repository.ReadFileContentAsBytes(pathToFile)
+	if readError != nil {
+		return model.Mappings{}, readError
+	}
+
+	var mappings model.Mappings
+	if serializationError := json.Unmarshal(content, &mappings); serializationError != nil {
+		return model.Mappings{}, serializationError
+	}
+
+	return mappings, nil
 }

@@ -8,16 +8,24 @@ import (
 
 func main() {
 
-	err := manager.RunSetup("./config/setup.yaml")
+	setupError := manager.RunSetup("../../configs/setup.yaml")
 
-	if err != nil {
-		fmt.Println("Error with setup setup:", err)
+	if setupError != nil {
+		fmt.Println("Error with setup:", setupError)
 		return
 	}
 
-	//manager.ExportMockStates()
-
-	//manager.ImportMockStateFromFile("mappings/Mock-2025-05-26T15:50:31+02:00.json")
+	//exportError := manager.ExportMockStates()
+	//if exportError != nil {
+	//	fmt.Println("Error with export:", exportError)
+	//	return
+	//}
+	//
+	//importError := manager.ImportMockStateFromFile("../../mappings/Mock-2025-05-26T15:50:31+02:00.json")
+	//if importError != nil {
+	//	fmt.Println("Error with import:", importError)
+	//	return
+	//}
 
 	for true {
 	}

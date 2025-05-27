@@ -48,7 +48,7 @@ func ExportMockStates() error {
 }
 
 func ImportMockStateFromFile(filePath string) error {
-	mockUrl, name, importError := service.ImportMockState(filePath)
+	mockUrl, name, importError := service.CreateAndImportMockState(filePath)
 	if importError != nil {
 		return importError
 	}

@@ -10,10 +10,10 @@ import (
 func SetupContainer(container model.Container) (string, error) {
 	url, err := repository.CreateTestContainer(container.Image, container.Tag, container.Port, container.Name)
 	if err != nil {
-		fmt.Println("Error creating WireMock test container:", err)
+		fmt.Printf("Error creating test container for %s: %s", container.Name, err)
 		return "", err
 	}
 
-	fmt.Printf("%s WireMock container is available on %s/__admin/mappings", container.Name, url)
+	fmt.Printf("%s container is available on %s/__admin/mappings", container.Name, url)
 	return url, nil
 }

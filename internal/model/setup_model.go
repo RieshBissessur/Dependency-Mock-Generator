@@ -14,6 +14,5 @@ type Container struct {
 
 type Mock struct {
 	Name string
-	Type int
-	File string
+	File *string
 }

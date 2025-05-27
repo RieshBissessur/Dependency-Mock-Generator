@@ -6,5 +6,4 @@ Containers:
 
 Mocks:
   - Name: Mock 
-    Type: 0
-    File: ""
+    File: "././config/setup.yaml"

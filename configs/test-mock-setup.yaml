@@ -6,5 +6,4 @@ Containers:
 
 Mocks:
   - Name: TestMock 
-    Type: 0
     File: ""
