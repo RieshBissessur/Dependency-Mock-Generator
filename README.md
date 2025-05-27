@@ -37,14 +37,13 @@ Create a `setup.yaml` file to configure your mocks and containers:
 
 ```yaml
 Containers:
-  #- Name: redis    # Example container configuration
-  #  Image: redis
-  #  Tag: latest
-  #  Port: 6379
+  - Name: redis    # Example container configuration
+    Image: redis
+    Tag: latest
+    Port: 6379
 
 Mocks:
   - Name: Mock     # WireMock service
-    Type: 0        # 0 = WireMock type
     File: ""       # Optional: Path to mappings file
 ```
 
@@ -61,11 +60,13 @@ import (
 )
 
 func main() {
-    err := manager.RunSetup("configs/setup.yaml")
-    if err != nil {
-        fmt.Println("Error with setup:", err)
-        return
-    }
+	setupError := manager.RunSetup("../configs/setup.yaml")
+
+	if setupError != nil {
+		fmt.Println("Error with setup:", setupError)
+		return
+	}
+
 
     // Your application code here...
 }
@@ -74,10 +75,17 @@ func main() {
 ### Working with WireMock
 
 ```go
+// Export current mock states
+exportError := manager.ExportMockStates()
+if exportError != nil {
+    fmt.Println("Error with export:", exportError)
+    return
+}
+
 // Import mock state from a file
-err := manager.ImportMockStateFromFile("mappings/Mock-2025-05-26T15:50:31+02:00.json")
-if err != nil {
-    fmt.Println("Error importing mock state:", err)
+importError := manager.ImportMockStateFromFile("../../mappings/Mock-2025-05-26T15:50:31+02:00.json")
+if importError != nil {
+    fmt.Println("Error with import:", importError)
     return
 }
 
@@ -85,28 +93,6 @@ if err != nil {
 value, exists := manager.ActiveMocks["Mock"]
 if exists {
     fmt.Printf("Mock is running at: %s\n", value)
-}
-```
-
-### Testing Example
-
-```go
-func TestWithRedis(t *testing.T) {
-    ctx := context.Background()
-    req := testcontainers.ContainerRequest{
-        Image:        "redis:latest",
-        ExposedPorts: []string{"6379/tcp"},
-        WaitingFor:   wait.ForLog("Ready to accept connections"),
-    }
-
-    redisC, err := testcontainers.GenericContainer(ctx, testcontainers.GenericContainerRequest{
-        ContainerRequest: req,
-        Started:         true,
-    })
-    require.NoError(t, err)
-    defer redisC.Terminate(ctx)
-
-    // Your test code here...
 }
 ```
 
