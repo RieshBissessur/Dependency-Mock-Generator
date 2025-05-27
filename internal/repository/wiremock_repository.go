@@ -1,24 +1,24 @@
-package repositories
+package repository
 
 import (
 	"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
-	"mock-generator/interfaces"
-	"mock-generator/models"
 	"net/http"
 	"strconv"
+
+	"github.com/rieshbissessur/dependency-mock-generator/internal/model"
 
 	"github.com/wiremock/go-wiremock"
 )
 
 // For testing and DI
 var (
-	newWiremockClient = func(url string) interfaces.WiremockClient {
+	NewWiremockClient = func(url string) WiremockClient {
 		return wiremock.NewClient(url)
 	}
-	httpClient interfaces.HTTPClient = realHTTPClient{}
+	HttpClient HTTPClient = realHTTPClient{}
 )
 
 type realHTTPClient struct{}
@@ -32,7 +32,7 @@ func (r realHTTPClient) Post(url, contentType string, body io.Reader) (*http.Res
 }
 
 func AddGetMappingModel(url string, path string, statusCode int64, response map[string]any) error {
-	client := newWiremockClient(url)
+	client := NewWiremockClient(url)
 
 	basicAuthStub := wiremock.Get(wiremock.URLMatching(path)).
 		WillReturnResponse(wiremock.NewResponse().
@@ -48,7 +48,7 @@ func AddGetMappingModel(url string, path string, statusCode int64, response map[
 }
 
 func AddPostMappingModel(url string, path string, statusCode int64, response map[string]any) error {
-	client := newWiremockClient(url)
+	client := NewWiremockClient(url)
 
 	basicAuthStub := wiremock.Post(wiremock.URLMatching(path)).
 		WillReturnResponse(wiremock.NewResponse().
@@ -64,7 +64,7 @@ func AddPostMappingModel(url string, path string, statusCode int64, response map
 }
 
 func ClearAllMappingModels(url string) error {
-	client := newWiremockClient(url)
+	client := NewWiremockClient(url)
 
 	clearError := client.Reset()
 	if clearError != nil {
@@ -75,7 +75,7 @@ func ClearAllMappingModels(url string) error {
 }
 
 func GetAllMappingModels(url string) (string, error) {
-	response, getError := httpClient.Get(fmt.Sprintf("%s/__admin/mappings", url))
+	response, getError := HttpClient.Get(fmt.Sprintf("%s/__admin/mappings", url))
 	if getError != nil {
 		return "", fmt.Errorf("Failed to get mappings: %w", getError)
 	}
@@ -93,14 +93,14 @@ func GetAllMappingModels(url string) (string, error) {
 	return string(body), nil
 }
 
-func ImportMappingModels(url string, mapping models.Mapping) error {
+func ImportMappingModels(url string, mapping model.Mapping) error {
 	postUrl := fmt.Sprintf("%s/__admin/mappings", url)
 	jsonBytes, err := json.Marshal(mapping)
 	if err != nil {
 		return fmt.Errorf("failed to serialize mapping: %w", err)
 	}
 
-	response, postError := httpClient.Post(postUrl, "application/json", bytes.NewReader(jsonBytes))
+	response, postError := HttpClient.Post(postUrl, "application/json", bytes.NewReader(jsonBytes))
 	if postError != nil {
 		return fmt.Errorf("Failed to read response: %w", postError)
 	}

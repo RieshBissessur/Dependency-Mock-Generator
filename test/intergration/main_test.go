@@ -1,10 +1,10 @@
-package main
+package intergration
 
 import (
 	"context"
-	"mock-generator/managers"
 	"testing"
 
+	"github.com/rieshbissessur/dependency-mock-generator/internal/manager"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/testcontainers/testcontainers-go"
@@ -47,10 +47,11 @@ func TestWithRedis(t *testing.T) {
 
 func TestSetupMock(t *testing.T) {
 	// Act
-	managers.RunSetup("test-setup.yaml")
+	runError := manager.RunSetup("../../configs/test-setup.yaml")
 
 	// Assert
-	value, contains := managers.ActiveMocks["TestMock"]
+	assert.Equal(t, runError, nil)
+	value, contains := manager.ActiveMocks["TestMock"]
 
 	assert.Equal(t, contains, true)
 	assert.Contains(t, value, "http://localhost")
@@ -58,10 +59,11 @@ func TestSetupMock(t *testing.T) {
 
 func TestImportMock(t *testing.T) {
 	// Act
-	managers.ImportMockStateFromFile("mappings/Mock-2025-05-26T15:50:31+02:00.json")
+	importError := manager.ImportMockStateFromFile("../../mappings/Mock-2025-05-26T15:50:31+02:00.json")
 
 	// Assert
-	value, contains := managers.ActiveMocks["Mock"]
+	assert.Equal(t, importError, nil)
+	value, contains := manager.ActiveMocks["Mock"]
 
 	assert.Equal(t, contains, true)
 	assert.Contains(t, value, "http://localhost")

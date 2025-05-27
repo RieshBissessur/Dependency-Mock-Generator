@@ -1,4 +1,4 @@
-module mock-generator
+module github.com/rieshbissessur/dependency-mock-generator
 
 go 1.23.0
 

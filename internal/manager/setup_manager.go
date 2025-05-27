@@ -1,8 +1,8 @@
-package managers
+package manager
 
 import (
-	"mock-generator/providers"
-	"mock-generator/services"
+	"github.com/rieshbissessur/dependency-mock-generator/internal/provider"
+	"github.com/rieshbissessur/dependency-mock-generator/internal/service"
 )
 
 var ActiveContainers = make(map[string]string)
@@ -10,13 +10,13 @@ var ActiveMocks = make(map[string]string)
 
 func RunSetup(setupPathFile string) error {
 
-	setup, setupErr := providers.GetSetupFromFile(setupPathFile)
+	setup, setupErr := provider.GetSetupFromFile(setupPathFile)
 	if setupErr != nil {
 		return nil
 	}
 
 	for _, container := range setup.Containers {
-		containerUrl, err := services.SetupContainer(container)
+		containerUrl, err := service.SetupContainer(container)
 		if err != nil {
 			continue
 		}
@@ -25,7 +25,7 @@ func RunSetup(setupPathFile string) error {
 	}
 
 	for _, wireMock := range setup.Mocks {
-		mockUrl, err := services.SetupMock(wireMock)
+		mockUrl, err := service.SetupMock(wireMock)
 		if err != nil {
 			continue
 		}
@@ -38,7 +38,7 @@ func RunSetup(setupPathFile string) error {
 
 func ExportMockStates() error {
 	for name, wireMock := range ActiveMocks {
-		exportError := services.ExportMockState(name, wireMock)
+		exportError := service.ExportMockState(name, wireMock)
 		if exportError != nil {
 			return exportError
 		}
@@ -48,7 +48,7 @@ func ExportMockStates() error {
 }
 
 func ImportMockStateFromFile(filePath string) error {
-	mockUrl, name, importError := services.ImportMockState(filePath)
+	mockUrl, name, importError := service.ImportMockState(filePath)
 	if importError != nil {
 		return importError
 	}

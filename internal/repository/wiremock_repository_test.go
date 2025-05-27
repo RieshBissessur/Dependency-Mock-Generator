@@ -1,16 +1,15 @@
-package repositories
+package repository
 
 import (
 	"errors"
 	"io"
-	"mock-generator/interfaces"
-	"mock-generator/mocks"
-	"mock-generator/models"
 	"net/http"
 	"strings"
 	"testing"
 
 	"github.com/golang/mock/gomock"
+	"github.com/rieshbissessur/dependency-mock-generator/internal/model"
+	"github.com/rieshbissessur/dependency-mock-generator/test/mock"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -49,16 +48,16 @@ func TestAddGetMappingModel(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			mockClient := mocks.NewMockWiremockClient(ctrl)
+			mockClient := mock.NewMockWiremockClient(ctrl)
 			mockClient.EXPECT().
 				StubFor(gomock.Any()).
 				Return(tt.mockErr)
 
-			origNewClient := newWiremockClient
-			newWiremockClient = func(url string) interfaces.WiremockClient {
+			origNewClient := NewWiremockClient
+			NewWiremockClient = func(url string) WiremockClient {
 				return mockClient
 			}
-			defer func() { newWiremockClient = origNewClient }()
+			defer func() { NewWiremockClient = origNewClient }()
 
 			err := AddGetMappingModel(tt.url, tt.path, tt.statusCode, tt.response)
 			if tt.wantErr {
@@ -105,16 +104,16 @@ func TestAddPostMappingModel(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			mockClient := mocks.NewMockWiremockClient(ctrl)
+			mockClient := mock.NewMockWiremockClient(ctrl)
 			mockClient.EXPECT().
 				StubFor(gomock.Any()).
 				Return(tt.mockErr)
 
-			origNewClient := newWiremockClient
-			newWiremockClient = func(url string) interfaces.WiremockClient {
+			origNewClient := NewWiremockClient
+			NewWiremockClient = func(url string) WiremockClient {
 				return mockClient
 			}
-			defer func() { newWiremockClient = origNewClient }()
+			defer func() { NewWiremockClient = origNewClient }()
 
 			err := AddPostMappingModel(tt.url, tt.path, tt.statusCode, tt.response)
 			if tt.wantErr {
@@ -152,16 +151,16 @@ func TestClearAllMappingModels(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			mockClient := mocks.NewMockWiremockClient(ctrl)
+			mockClient := mock.NewMockWiremockClient(ctrl)
 			mockClient.EXPECT().
 				Reset().
 				Return(tt.mockErr)
 
-			origNewClient := newWiremockClient
-			newWiremockClient = func(url string) interfaces.WiremockClient {
+			origNewClient := NewWiremockClient
+			NewWiremockClient = func(url string) WiremockClient {
 				return mockClient
 			}
-			defer func() { newWiremockClient = origNewClient }()
+			defer func() { NewWiremockClient = origNewClient }()
 
 			err := ClearAllMappingModels(tt.url)
 			if tt.wantErr {
@@ -217,14 +216,14 @@ func TestGetAllMappingModels(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			mockHTTP := mocks.NewMockHTTPClient(ctrl)
+			mockHTTP := mock.NewMockHTTPClient(ctrl)
 			mockHTTP.EXPECT().
 				Get(tt.url+"/__admin/mappings").
 				Return(tt.mockResp, tt.mockErr)
 
-			origHTTP := httpClient
-			httpClient = mockHTTP
-			defer func() { httpClient = origHTTP }()
+			origHTTP := HttpClient
+			HttpClient = mockHTTP
+			defer func() { HttpClient = origHTTP }()
 
 			result, err := GetAllMappingModels(tt.url)
 			if tt.wantErr {
@@ -241,7 +240,7 @@ func TestImportMappingModels(t *testing.T) {
 	tests := []struct {
 		name     string
 		url      string
-		mapping  models.Mapping
+		mapping  model.Mapping
 		wantErr  bool
 		mockResp *http.Response
 		mockErr  error
@@ -249,13 +248,13 @@ func TestImportMappingModels(t *testing.T) {
 		{
 			name: "successful import",
 			url:  "http://localhost:8080",
-			mapping: models.Mapping{
+			mapping: model.Mapping{
 				ID: "test-id",
-				Request: models.Request{
+				Request: model.Request{
 					UrlPattern: "/test",
 					Method:     "GET",
 				},
-				Response: models.Response{
+				Response: model.Response{
 					Status:   200,
 					JsonBody: map[string]string{"key": "value"},
 				},
@@ -270,7 +269,7 @@ func TestImportMappingModels(t *testing.T) {
 		{
 			name: "http error",
 			url:  "http://localhost:8080",
-			mapping: models.Mapping{
+			mapping: model.Mapping{
 				ID: "test-id",
 			},
 			wantErr:  true,
@@ -280,7 +279,7 @@ func TestImportMappingModels(t *testing.T) {
 		{
 			name: "non-201 status",
 			url:  "http://localhost:8080",
-			mapping: models.Mapping{
+			mapping: model.Mapping{
 				ID: "test-id",
 			},
 			mockResp: &http.Response{
@@ -297,14 +296,14 @@ func TestImportMappingModels(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			mockHTTP := mocks.NewMockHTTPClient(ctrl)
+			mockHTTP := mock.NewMockHTTPClient(ctrl)
 			mockHTTP.EXPECT().
 				Post(tt.url+"/__admin/mappings", "application/json", gomock.Any()).
 				Return(tt.mockResp, tt.mockErr)
 
-			origHTTP := httpClient
-			httpClient = mockHTTP
-			defer func() { httpClient = origHTTP }()
+			origHTTP := HttpClient
+			HttpClient = mockHTTP
+			defer func() { HttpClient = origHTTP }()
 
 			err := ImportMappingModels(tt.url, tt.mapping)
 			if tt.wantErr {

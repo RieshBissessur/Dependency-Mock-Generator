@@ -1,16 +1,16 @@
-package services
+package service
 
 import (
 	"encoding/json"
 	"fmt"
-	"mock-generator/models"
-	"mock-generator/providers"
-	"mock-generator/repositories"
 	"time"
+
+	"github.com/rieshbissessur/dependency-mock-generator/internal/model"
+	"github.com/rieshbissessur/dependency-mock-generator/internal/repository"
 )
 
-func SetupMock(wireMocks providers.Mock) (string, error) {
-	url, err := repositories.CreateWireMockContainer(wireMocks.Name)
+func SetupMock(wireMocks model.Mock) (string, error) {
+	url, err := repository.CreateWireMockContainer(wireMocks.Name)
 
 	if err != nil {
 		fmt.Println("Error creating WireMock test container:", err)
@@ -21,12 +21,12 @@ func SetupMock(wireMocks providers.Mock) (string, error) {
 }
 
 func ExportMockState(name string, url string) error {
-	mappingsString, err := repositories.GetAllMappingModels(url)
+	mappingsString, err := repository.GetAllMappingModels(url)
 	if err != nil {
 		return err
 	}
 
-	var mappings models.Mappings
+	var mappings model.Mappings
 	if err := json.Unmarshal([]byte(mappingsString), &mappings); err != nil {
 		return err
 	}
@@ -34,28 +34,28 @@ func ExportMockState(name string, url string) error {
 	mappings.Name = &name
 
 	fileName := fmt.Sprintf("%s-%s.json", name, time.Now().Format("2006-01-02T15:04:05Z07:00"))
-	err = repositories.WriteFileContentFromAny("mappings", fileName, mappings)
+	err = repository.WriteFileContentFromAny("mappings", fileName, mappings)
 	return nil
 }
 
 func ImportMockState(pathToFile string) (string, string, error) {
-	content, readError := repositories.ReadFileContentAsBytes(pathToFile)
+	content, readError := repository.ReadFileContentAsBytes(pathToFile)
 	if readError != nil {
 		return "", "", readError
 	}
 
-	var mappings models.Mappings
+	var mappings model.Mappings
 	if err := json.Unmarshal(content, &mappings); err != nil {
 		return "", "", err
 	}
 
-	mock := providers.Mock{Name: *mappings.Name}
+	mock := model.Mock{Name: *mappings.Name}
 	mockUrl, err := SetupMock(mock)
 	if err != nil {
 		return "", "", err
 	}
 
-	importError := repositories.ImportMappingModels(mockUrl, mappings.Mappings[0])
+	importError := repository.ImportMappingModels(mockUrl, mappings.Mappings[0])
 	if importError != nil {
 		return "", "", importError
 	}

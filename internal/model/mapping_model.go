@@ -1,4 +1,4 @@
-package models
+package model
 
 type Mappings struct {
 	Mappings []Mapping `json:"mappings"`
