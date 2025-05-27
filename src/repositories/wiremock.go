@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"mock-generator/interfaces"
 	"mock-generator/models"
 	"net/http"
 	"strconv"
@@ -12,16 +13,33 @@ import (
 	"github.com/wiremock/go-wiremock"
 )
 
-func AddGetMappingModel(url string, path string, statusCode int64, response map[string]any) error {
-	wiremockClient := wiremock.NewClient(url)
+// For testing and DI
+var (
+	newWiremockClient = func(url string) interfaces.WiremockClient {
+		return wiremock.NewClient(url)
+	}
+	httpClient interfaces.HTTPClient = realHTTPClient{}
+)
 
-	basicAuthStub := wiremock.
-		Get(wiremock.URLMatching(path)).
+type realHTTPClient struct{}
+
+func (r realHTTPClient) Get(url string) (*http.Response, error) {
+	return http.Get(url)
+}
+
+func (r realHTTPClient) Post(url, contentType string, body io.Reader) (*http.Response, error) {
+	return http.Post(url, contentType, body)
+}
+
+func AddGetMappingModel(url string, path string, statusCode int64, response map[string]any) error {
+	client := newWiremockClient(url)
+
+	basicAuthStub := wiremock.Get(wiremock.URLMatching(path)).
 		WillReturnResponse(wiremock.NewResponse().
 			WithStatus(statusCode).
 			WithJSONBody(response))
 
-	stubError := wiremockClient.StubFor(basicAuthStub)
+	stubError := client.StubFor(basicAuthStub)
 	if stubError != nil {
 		return fmt.Errorf("failed to stub mappings: %w", stubError)
 	}
@@ -30,14 +48,14 @@ func AddGetMappingModel(url string, path string, statusCode int64, response map[
 }
 
 func AddPostMappingModel(url string, path string, statusCode int64, response map[string]any) error {
-	wiremockClient := wiremock.NewClient(url)
+	client := newWiremockClient(url)
 
 	basicAuthStub := wiremock.Post(wiremock.URLMatching(path)).
 		WillReturnResponse(wiremock.NewResponse().
 			WithStatus(statusCode).
 			WithJSONBody(response))
 
-	stubError := wiremockClient.StubFor(basicAuthStub)
+	stubError := client.StubFor(basicAuthStub)
 	if stubError != nil {
 		return fmt.Errorf("failed to stub mappings: %w", stubError)
 	}
@@ -46,9 +64,9 @@ func AddPostMappingModel(url string, path string, statusCode int64, response map
 }
 
 func ClearAllMappingModels(url string) error {
-	wiremockClient := wiremock.NewClient(url)
+	client := newWiremockClient(url)
 
-	clearError := wiremockClient.Reset()
+	clearError := client.Reset()
 	if clearError != nil {
 		return fmt.Errorf("failed to clear mappings: %w", clearError)
 	}
@@ -57,7 +75,7 @@ func ClearAllMappingModels(url string) error {
 }
 
 func GetAllMappingModels(url string) (string, error) {
-	response, getError := http.Get(fmt.Sprintf("%s/__admin/mappings", url))
+	response, getError := httpClient.Get(fmt.Sprintf("%s/__admin/mappings", url))
 	if getError != nil {
 		return "", fmt.Errorf("Failed to get mappings: %w", getError)
 	}
@@ -73,7 +91,6 @@ func GetAllMappingModels(url string) (string, error) {
 	}
 
 	return string(body), nil
-
 }
 
 func ImportMappingModels(url string, mapping models.Mapping) error {
@@ -83,7 +100,7 @@ func ImportMappingModels(url string, mapping models.Mapping) error {
 		return fmt.Errorf("failed to serialize mapping: %w", err)
 	}
 
-	response, postError := http.Post(postUrl, "application/json", bytes.NewReader(jsonBytes))
+	response, postError := httpClient.Post(postUrl, "application/json", bytes.NewReader(jsonBytes))
 	if postError != nil {
 		return fmt.Errorf("Failed to read response: %w", postError)
 	}

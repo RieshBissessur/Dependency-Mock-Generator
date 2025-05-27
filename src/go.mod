@@ -6,6 +6,7 @@ toolchain go1.23.9
 
 require (
 	github.com/docker/go-connections v0.5.0
+	github.com/golang/mock v1.6.0
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/stretchr/testify v1.10.0
 	github.com/testcontainers/testcontainers-go v0.37.0
